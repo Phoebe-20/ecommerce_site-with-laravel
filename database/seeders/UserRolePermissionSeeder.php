@@ -39,7 +39,7 @@ class UserRolePermissionSeeder extends Seeder
        $CommercialRole = Role::create(['name' => 'Commercial']);
       
 
-       // Lets give all permission Admin role.
+       // Lets give all permission to Admin role.
        $allPermissionNames = Permission::pluck('name')->toArray();
 
        $AdminRole->givePermissionTo($allPermissionNames);

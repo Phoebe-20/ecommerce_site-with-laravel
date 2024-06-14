@@ -358,7 +358,8 @@ class PaymentController extends Controller
 
                 Cart::clear();
 
-                return redirect('cart')->with('success', "Votre commande a réussie");
+                return redirect('cart')->with('success', "Paiement éffectué.
+                                                         Votre commande a réussie");
            } 
            else 
            {
@@ -370,7 +371,32 @@ class PaymentController extends Controller
         {
             abort(404);
         }
+    }
 
+    public function stripe_success_payment(Request $request)
+    {
+        $trans_id = Session::get('stripe_session_id');
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+        $getdata = \Stripe\Checkout\Session::retrieve($trans_id);
+
+        $getOrder = Order::where('stripe_session_id', '=', $getdata->id)->first();
+
+        if (!empty($getOrder) && !empty($getdata->id) && $getdata->id == $getOrder->stripe_session_id) 
+        {
+            $getOrder->is_payment = 1;
+            $getOrder->transaction_id = $getdata->id;
+            $getOrder->payment_data = json_encode($getdata);
+            $getOrder->save();
+
+            Cart::clear();
+
+            return redirect('cart')->with('success', "Paiement éffectué.
+                                                    Votre commande a réussie");
+        } 
+        else 
+        {
+            return redirect('cart')->with('error', "Une erreur s'est produit, veuillez réessayer");
+        }
         
     }
 }
